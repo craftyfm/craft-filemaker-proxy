@@ -1,0 +1,61 @@
+{% extends "_layouts/cp" %}
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% set title = "Profiles" %}
+{% set selectedSubnavItem = 'profiles' %}
+{% block actionButton %}
+    {% if currentUser.can('fmProxy-update-profile') %}
+        <a href='{{ url("filemaker-proxy/profiles/new") }}' class="btn submit add icon">New</a>
+    {% endif %}
+
+{% endblock %}
+
+{% block content %}
+
+    <div id="profiles-admin-table"></div>
+    <script>
+        var tableData = {{ tableData|json_encode|raw }}
+        var deleteAction = "{{ currentUser.can('fmProxy-delete-profile') ? actionUrl('filemaker-proxy/profiles/delete')  }}";
+
+    </script>
+
+
+
+{% endblock %}
+
+{% js %}
+
+const columns = [
+    {
+        name: '__slot:title',
+        title: 'Name'
+    },
+    {
+        name: 'handle',
+        title: 'Handle'
+    },
+    {
+        name: 'endpointUrl',
+        title: 'URL'
+    },
+    {
+        name: 'enabled',
+        title: 'Enabled',
+        callback: function(value) {
+            if (value === true) {
+                return `<span class='status green'></span> Enabled`;
+            }
+
+            return `<span class='status red'></span> Disabled`;
+        }
+    },
+];
+
+new Craft.VueAdminTable({
+    tableData: tableData,
+    columns: columns,
+    container: '#profiles-admin-table',
+    emptyMessage: 'No profiles exist yet.',
+    deleteAction: deleteAction,
+});
+
+{% endjs %}

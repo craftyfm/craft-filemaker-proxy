@@ -1,0 +1,20 @@
+{% extends "_layouts/cp" %}
+
+{% set selectedSubnavItem = 'settings' %}
+
+{% block sidebar %}
+    <nav aria-label="Utilities">
+        <ul>
+            <li>
+                <a class="has-badge {{ currentPage == 'general' ? 'sel' }}" href="{{ cpUrl('filemaker-proxy/settings') }}">
+                    <span class="label">General</span>
+                </a>
+            </li>
+            <li>
+                <a class="has-badge {{ currentPage == 'connections' ? 'sel' }}" href="{{ cpUrl('filemaker-proxy/settings/connections') }}">
+                    <span class="label">Connections</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}

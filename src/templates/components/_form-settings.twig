@@ -1,0 +1,11 @@
+{% import "_includes/forms" as forms %}
+{{ forms.selectField({
+    label: 'Profile',
+    instructions: 'Choose relaated profile',
+    id: 'profileId',
+    name: 'profileId',
+    options: profileOptions,
+    errors:  integration.getErrors('profileId'),
+    value: integration.profileId,
+    required: true
+}) }}

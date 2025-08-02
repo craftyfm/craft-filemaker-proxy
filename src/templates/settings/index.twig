@@ -1,0 +1,53 @@
+{% import '_includes/forms.twig' as forms %}
+{% extends "filemaker-proxy/settings/_layouts/base" %}
+
+{% set title = 'Filemaker Proxy Settings' %}
+{% set readOnly = true %}
+{% if craft.app.config.general.allowAdminChanges %}
+    {% set fullPageForm = true %}
+    {% set readOnly = false %}
+{% endif %}
+
+{% block content %}
+    {{ csrfInput() }}
+    {{ actionInput('filemaker-proxy/settings/save') }}
+    {{ redirectInput('filemaker-proxy/settings') }}
+
+    <div class="field">
+        {{ forms.autosuggestField({
+            label: 'Admin Email',
+            instructions: "Enter an email to send in case there is issue during the request process, leave empty if don\'t want to send email",
+            name: 'adminEmail',
+            required: false,
+            suggestEnvVars: true,
+            value: settings.adminEmail,
+            placeholder: '$EMAIL',
+            errors: settings.getErrors('adminEmail'),
+            disabled:readOnly
+        }) }}
+    </div>
+
+    <div class="field">
+        {{ forms.autosuggestField({
+            label: 'API TOKEN',
+            instructions: 'Enter the API token to secure the connection. You can use environment variables like $ENCRYPT_KEY',
+            name: 'token',
+            required: true,
+            suggestEnvVars: true,
+            value: settings.token,
+            placeholder: '$TOKEN or your-secret-key-here',
+            errors: settings.getErrors('token'),
+            disabled:readOnly
+        }) }}
+    </div>
+
+    <div class="field">
+        <div class="heading">
+            <label>Security Notice</label>
+        </div>
+        <div class="instructions">
+            <p>It's highly recommended to store your encryption key as an environment variable rather than hardcoding it. 
+            Add something like <code>ENCRYPT_KEY=your-secret-key-here</code> to your <code>.env</code> file and use <code>$ENCRYPT_KEY</code> in the field above.</p>
+        </div>
+    </div>
+{% endblock %}
