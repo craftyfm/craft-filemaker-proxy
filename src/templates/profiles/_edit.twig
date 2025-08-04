@@ -1,0 +1,99 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = profile.id ? "Edit profile" : "New profile" %}
+{% set readOnly = true %}
+{% if currentUser.can('fmProxy-update-profile') %}
+    {% set fullPageForm = true %}
+    {% set readOnly = false %}
+{% endif %}
+
+
+{% set selectedSubnavItem = 'profiles' %}
+
+{% block content %}
+    {{ csrfInput() }}
+    {{ actionInput('filemaker-proxy/profiles/save') }}
+    {% if profile.id %}
+        <input type="hidden" name="id" value="{{ profile.id }}">
+    {% endif %}
+    {{ redirectInput('filemaker-proxy/profiles') }}
+
+    {{ forms.textField({
+        label: "Name"|t,
+        instructions: "The display name for this profile"|t,
+        id: 'name',
+        name: 'name',
+        value: profile.name,
+        errors: profile.getErrors('name'),
+        autofocus: true,
+        required: true,
+        disabled: readOnly
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t,
+        instructions: "The display name for this connection"|t,
+        id: 'handle',
+        name: 'handle',
+        value: profile.handle,
+        errors: profile.getErrors('handle'),
+        autofocus: true,
+        required: true,
+        disabled: readOnly
+    }) }}
+
+    {{ forms.selectField({
+        label: 'Connection'|t('app'),
+        instructions: 'Choose connection credentials',
+        id: 'connectionId',
+        name: 'connectionId',
+        options: connectionOptions,
+        errors:  profile.getErrors('connectionId'),
+        value: profile.connectionId,
+        required: true,
+        disabled: readOnly
+    }) }}
+
+    {{ forms.textField({
+        label: "Layout"|t,
+        instructions: "Insert related layout"|t,
+        id: 'layout',
+        name: 'layout',
+        value: profile.layout,
+        errors: profile.getErrors('layout'),
+        autofocus: true,
+        required: true,
+        disabled: readOnly
+    }) }}
+
+{% endblock %}
+
+{% block details %}
+
+    <div class="meta">
+        {{ forms.lightswitchField({
+            first: true,
+            label: 'Enabled',
+            id: 'enabled',
+            name: 'enabled',
+            on:  profile.enabled,
+        }) }}
+        {{ forms.lightswitchField({
+            first: true,
+            label: 'Endpoint Enabled',
+            id: 'endpointEnabled',
+            name: 'endpointEnabled',
+            on:  profile.endpointEnabled,
+        }) }}
+        {{ forms.textField({
+            label: "URL"|t,
+            value: profile.getUrl(),
+            disabled: true
+        }) }}
+    </div>
+{% endblock %}
+
+{% if not profile.handle %}
+    {% js "new Craft.HandleGenerator('##{'name'|namespaceInputId}', '##{'handle'|namespaceInputId}');" %}
+{% endif %}

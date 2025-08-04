@@ -1,0 +1,88 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = connection.id ? "Edit Connection" : "New Connection" %}
+{% set readOnly = true %}
+{% if craft.app.config.general.allowAdminChanges %}
+    {% set fullPageForm = true %}
+    {% set readOnly = false %}
+{% endif %}
+
+{% block content %}
+        {{ csrfInput() }}
+        {{ actionInput('filemaker-proxy/connections/save') }}
+    {% if connection.id %}
+        <input type="hidden" name="id" value="{{ connection.id }}">
+    {% endif %}
+        {{ redirectInput('filemaker-proxy/settings/connections') }}
+
+    {{ forms.textField({
+        label: "Name"|t,
+        instructions: "The display name for this connection"|t,
+        id: 'name',
+        name: 'name',
+        value: connection ? connection.name,
+        errors: connection? connection.getErrors('name'),
+        autofocus: true,
+        required: true,
+        disabled: readOnly
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t,
+        instructions: "The display name for this connection"|t,
+        id: 'handle',
+        name: 'handle',
+        value: connection ? connection.handle,
+        errors: connection ? connection.getErrors('handle'),
+        autofocus: true,
+        required: true,
+        disabled: readOnly
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: 'Host',
+        name: 'host',
+        value: connection.host,
+        instructions: 'Your FileMaker Server host, e.g., example.com',
+        errors: connection.getErrors('host'),
+        placeholder: "example.com",
+        suggestEnvVars: true,
+        disabled: readOnly
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: 'Database',
+        name: 'database',
+        value: connection.database,
+        instructions: 'Name of the FileMaker database.',
+        errors: connection.getErrors('database'),
+        placeholder: "database",
+        suggestEnvVars: true,
+        disabled: readOnly
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: 'Username',
+        name: 'username',
+        value: connection.username,
+        errors: connection.getErrors('username'),
+        placeholder: "username",
+        suggestEnvVars: true,
+        disabled: readOnly
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: 'Password',
+        name: 'password',
+        value: connection.password,
+        errors: connection.getErrors('password'),
+        placeholder: "password",
+        suggestEnvVars: true,
+        disabled: readOnly
+    }) }}
+{% endblock %}
+
+{% if not connection or not connection.handle %}
+    {% js "new Craft.HandleGenerator('##{'name'|namespaceInputId}', '##{'handle'|namespaceInputId}');" %}
+{% endif %}

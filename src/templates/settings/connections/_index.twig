@@ -1,0 +1,48 @@
+{% extends "filemaker-proxy/settings/_layouts/base" %}
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% set title = "Connections" %}
+
+{% block actionButton %}
+    {% if craft.app.config.general.allowAdminChanges %}
+        <a href='{{ url("filemaker-proxy/settings/connections/new") }}' class="btn submit add icon">New</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="connections-admin-table"></div>
+    <script>
+        var tableData = {{ tableData|json_encode|raw }}
+        {% if craft.app.config.general.allowAdminChanges %}
+            var deleteAction = "{{ actionUrl('filemaker-proxy/connections/delete')  }}";
+        {% else %}
+            var deleteAction = null;
+        {% endif %}
+    </script>
+
+
+
+{% endblock %}
+
+{% js %}
+
+const columns = [
+    {
+        name: '__slot:title',
+        title: 'Name'
+    },
+    {
+        name: 'handle',
+        title: 'Handle'
+    },
+];
+
+new Craft.VueAdminTable({
+    tableData: tableData,
+    columns: columns,
+    container: '#connections-admin-table',
+    emptyMessage: 'No connections exist yet.',
+    deleteAction: deleteAction
+});
+
+{% endjs %}
