@@ -176,6 +176,9 @@ class ApiService extends Component
                 parse_str($query, $queryParams);
                 if (!empty($queryParams['profile'])) {
                     $profile = FmProxy::getInstance()->profiles->getProfileByHandle($queryParams['profile']);
+                    if (!$profile) {
+                        return null;
+                    }
                     $response =  FmProxy::getInstance()->api->makeRequest($profile, $method, $options);
                     return $response->getBody()->getContents();
                 }
