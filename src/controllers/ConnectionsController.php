@@ -115,9 +115,11 @@ class ConnectionsController extends Controller
 
     /**
      * @throws NotFoundHttpException
+     * @throws BadRequestHttpException
      */
-    public function actionDelete(int $id): Response
+    public function actionDelete(): Response
     {
+        $id = $this->request->getRequiredBodyParam('id');
         $connection = FmProxy::getInstance()->connections->getConnectionById($id);
         if (!$connection) {
             throw new NotFoundHttpException('Connection not found');
