@@ -181,7 +181,7 @@ class FmProxy extends Plugin
             function(\craft\feedme\events\FeedDataEvent  $event) {
                 $url = $event->url;
                 $options = \craft\feedme\Plugin::$plugin->service->getRequestOptions($event->feedId);
-                $response = FmProxy::getInstance()->api->handleRequestedUrl($url, 'GET', $options);
+                $response = FmProxy::getInstance()->api->handleFeedMeRequest($url, 'GET', $options);
                 if ($response) {
                     $event->response = ['success' => true, 'data' => $response];;
                 }
