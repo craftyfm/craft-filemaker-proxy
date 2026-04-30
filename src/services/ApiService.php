@@ -218,7 +218,7 @@ class ApiService extends Component
             $parsed = parse_url($url);
             parse_str($parsed['query'] ?? '', $queryParams);
 
-            $offset     = (int)($queryParams['_offset'] ?? 0);
+            $offset     = (int)($queryParams['_offset'] ?? 1);
             $nextOffset = $offset + (int)$dataInfo['returnedCount'];
 
             if ($nextOffset < (int)$dataInfo['foundCount']) {
