@@ -103,7 +103,7 @@ class ApiService extends Component
      * @throws Exception
      * @throws GuzzleException
      */
-    public function makeRequest(Profile $profile, string $method = 'GET', array $data = []): ?\Psr\Http\Message\ResponseInterface
+    public function makeRequest(Profile $profile, string $method = 'GET', array $data = [], string $mode = 'records'): ?\Psr\Http\Message\ResponseInterface
     {
         $token = $this->authenticate($profile);
 
@@ -116,6 +116,13 @@ class ApiService extends Component
             'verify' => true,
         ]);
 
+        if ($mode === 'find') {
+            $url = $profile->getFindUrl();
+            $method = 'POST';
+        } else {
+            $url = $profile->getRecordUrl();
+        }
+
         $options = [
             'headers' => [
                 'Authorization' => 'Bearer ' . $token,
@@ -123,15 +130,21 @@ class ApiService extends Component
             ],
         ];
 
-        if (!empty($data)) {
-            $options['json'] = $data;
+        if ($method === 'GET') {
+            if (!empty($data)) {
+                $url .= '?' . http_build_query($data);
+            }
+        } else {
+            if (!empty($data)) {
+                $options['json'] = $data;
+            }
         }
 
         $maxRetries = 5;
-        
+
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             try {
-                $response = $client->request($method, $profile->getRecordUrl(), $options);
+                $response = $client->request($method, $url, $options);
                 // Logout after successful request
                 $this->logout($profile, $token);
                 
@@ -179,7 +192,12 @@ class ApiService extends Component
                     if (!$profile) {
                         return null;
                     }
-                    $response =  FmProxy::getInstance()->api->makeRequest($profile, $method, $options);
+                    $mode = $queryParams['mode'] ?? 'records';
+                    unset($queryParams['profile'], $queryParams['mode']);
+
+                    $data = array_merge($queryParams, $options);
+
+                    $response = FmProxy::getInstance()->api->makeRequest($profile, $method, $data, $mode);
                     return $response->getBody()->getContents();
                 }
             }

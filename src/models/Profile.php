@@ -42,6 +42,14 @@ class Profile extends Model
         return "https://$host/fmi/data/vLatest/databases/$database/layouts/$this->layout/records";
     }
 
+    public function getFindUrl(): string
+    {
+        $connection = $this->getConnection();
+        $host = App::parseEnv($connection->host);
+        $database = App::parseEnv($connection->database);
+        return "https://$host/fmi/data/vLatest/databases/$database/layouts/$this->layout/_find";
+    }
+
     public function getConnection(): ?Connection
     {
         if(isset($this->_connection)) {
