@@ -55,9 +55,18 @@ class ApiController extends Controller
             throw new NotFoundHttpException('Page not found.');
         }
         $method = $this->request->getMethod();
+        $mode = $this->request->getQueryParam('mode', 'records');
+
         $data = $this->request->getBodyParams();
+
+        $queryParams = $this->request->getQueryParams();
+        unset($queryParams['profile'], $queryParams['mode']);
+        if (!empty($queryParams)) {
+            $data = array_merge($data, $queryParams);
+        }
+
         try {
-            $response = FmProxy::getInstance()->api->makeRequest($profile, $method, $data);
+            $response = FmProxy::getInstance()->api->makeRequest($profile, $method, $data, $mode);
             $result = $response->getBody()->getContents();
             return $this->asJson(json_decode($result, true));
         } catch (GuzzleException $e) {
