@@ -195,9 +195,7 @@ class ApiService extends Component
                     $mode = $queryParams['mode'] ?? 'records';
                     unset($queryParams['profile'], $queryParams['mode']);
 
-                    $data = array_merge($queryParams, $options);
-
-                    $response = FmProxy::getInstance()->api->makeRequest($profile, $method, $data, $mode);
+                    $response = FmProxy::getInstance()->api->makeRequest($profile, $method, $queryParams, $mode);
                     return $response->getBody()->getContents();
                 }
             }
