@@ -7,7 +7,7 @@ This plugin acts as a proxy bridge to integrate Craft CMS with [FileMaker](https
 
 ---
 
-## 🛠 Installation
+## Installation
 
 1. Require the package via Composer:
    ```bash
@@ -21,26 +21,26 @@ This plugin acts as a proxy bridge to integrate Craft CMS with [FileMaker](https
 
 ---
 
-## ⚙️ Plugin Settings
+## Plugin Settings
 
 Go to **Settings → FileMaker Proxy** in your Craft control panel to configure:
 
-### 🔐 Connection Credentials
+### Connection Credentials
 
 * Create your FileMaker connection credentials under the **Connections** tab.
 * These will include host, username, password, and database.
 
-### 📧 Admin Email
+### Admin Email
 
 * Enter an admin email to receive error reports for failed or unexpected requests.
 
-### 🔑 API Token
+### API Token
 
 * Define a secure **API token** that will be used to authorize incoming requests to the proxy endpoints.
 
 ---
 
-## 🧩 Profiles
+## Profiles
 
 To handle different integrations, you can create multiple **Profiles**:
 
@@ -56,9 +56,9 @@ To handle different integrations, you can create multiple **Profiles**:
 
 ---
 
-## 🚀 Usage with Craft Plugins
+## Usage with Craft Plugins
 
-### 1. **Webhooks Plugin**
+### 1. Webhooks Plugin
 
 * Make sure the profile **endpoint is enabled**.
 * Use the generated profile endpoint URL as the **Request URL** in the Webhooks plugin.
@@ -70,30 +70,44 @@ To handle different integrations, you can create multiple **Profiles**:
 
   Replace `TOKEN` with the API token you set in the plugin settings.
 
-### 2. **Feed Me Plugin**
+### 2. Feed Me Plugin
 
 * Set the profile as **enabled** (endpoint does not need to be enabled).
-* Add the profile’s endpoint URL as the **feed URL**.
+* Add the profile's endpoint URL as the **feed URL**.
 * When Feed Me initiates a request, it will automatically be intercepted and forwarded to FileMaker through the defined connection.
 
-### 3. **Formie Plugin**
+**Pagination:** You can append `_limit` and `_offset` directly to the feed URL to paginate through records:
+
+```
+http://localhost/actions/filemaker-proxy/api/middleware?profile=myProfile&_limit=100&_offset=0
+```
+
+**Find mode:** To use FileMaker's `_find` endpoint instead of `records`, add `mode=find` to the URL and include your query criteria in the request body:
+
+```
+http://localhost/actions/filemaker-proxy/api/middleware?profile=myProfile&mode=find
+```
+
+The default mode is `records`.
+
+### 3. Formie Plugin
 
 * Create a custom integration under the **Miscellaneous** type.
 * Select and configure the appropriate FileMaker profile within your form.
 
-### 4. **Freeform Plugin**
+### 4. Freeform Plugin
 
 * Create a custom integration under the **Other** type.
 * Configure it similarly to Formie by linking to a FileMaker profile.
 
-### 5. **Form Builder Plugin**
+### 5. Form Builder Plugin
 
 * Create a custom integration under the **Miscellaneous** type.
 * Configure the FileMaker settings within the form setup.
 
 ---
 
-## 🔒 Security Notes
+## Security Notes
 
 * Only requests from `localhost` can trigger real interactions with FileMaker.
 * All endpoints are protected using API tokens defined in your plugin settings.
@@ -101,9 +115,8 @@ To handle different integrations, you can create multiple **Profiles**:
 
 ---
 
-## 📬 Support
+## Support
 
 For issues or feature requests, please open an issue in the repository or contact the maintainer.
 
 ---
-
