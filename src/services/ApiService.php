@@ -204,6 +204,37 @@ class ApiService extends Component
         return null;
     }
     
+    public function handleFeedMeRequest(string $url, string $method, array $options): ?string
+    {
+        $body = $this->handleRequestedUrl($url, $method, $options);
+        if (!$body) {
+            return null;
+        }
+
+        $data = json_decode($body, true);
+        $dataInfo = $data['response']['dataInfo'] ?? null;
+
+        if ($dataInfo && isset($dataInfo['foundCount'], $dataInfo['returnedCount'])) {
+            $parsed = parse_url($url);
+            parse_str($parsed['query'] ?? '', $queryParams);
+
+            $offset     = (int)($queryParams['_offset'] ?? 0);
+            $nextOffset = $offset + (int)$dataInfo['returnedCount'];
+
+            if ($nextOffset < (int)$dataInfo['foundCount']) {
+                $queryParams['_offset'] = $nextOffset;
+                $nextUrl = $parsed['scheme'] . '://' . $parsed['host']
+                    . ($parsed['path'] ?? '')
+                    . '?' . http_build_query($queryParams);
+
+                $data['response']['dataInfo']['nextUrl'] = $nextUrl;
+                return json_encode($data);
+            }
+        }
+
+        return $body;
+    }
+
     private function _sendErrorNotification(Profile $profile, int $maxRetries, string $method, string $errorMessage): void
     {
         $recordUrl = $profile->getRecordUrl();
