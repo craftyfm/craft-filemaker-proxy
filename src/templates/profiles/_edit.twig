@@ -67,6 +67,58 @@
         disabled: readOnly
     }) }}
 
+    <hr>
+
+    <h2>{{ "URL Builder"|t }}</h2>
+    <p class="instructions">{{ "Build and copy the middleware URL for this profile."|t }}</p>
+
+    <div class="field">
+        <div class="heading">
+            <label>{{ "Generated URL"|t }}</label>
+        </div>
+        <div class="flex flex-nowrap" style="gap:8px;">
+            <input type="text" id="url-builder-output" class="text fullwidth code" readonly style="flex:1;">
+            <button type="button" id="url-builder-copy" class="btn">{{ "Copy"|t }}</button>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="heading">
+            <label>{{ "Mode"|t }}</label>
+        </div>
+        <div class="input">
+            <div class="btngroup">
+                <button type="button" id="url-builder-mode-records" class="btn active">{{ "Records"|t }}</button>
+                <button type="button" id="url-builder-mode-find" class="btn">{{ "Find"|t }}</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="heading">
+            <label>{{ "Method"|t }}</label>
+        </div>
+        <div class="input">
+            <div class="btngroup">
+                <button type="button" id="url-builder-method-get" class="btn active">GET</button>
+                <button type="button" id="url-builder-method-post" class="btn">POST</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="heading">
+            <label for="url-builder-data">{{ "JSON Data"|t }}</label>
+            <div class="instructions">
+                <p id="url-builder-data-hint">{{ "Paste your JSON payload. For GET, params are appended to the URL. For POST, only profile/mode go in the URL — send this JSON as the request body."|t }}</p>
+            </div>
+        </div>
+        <div class="input">
+            <textarea id="url-builder-data" class="text fullwidth code" rows="10" placeholder='{ "limit": "10", "offset": "1" }'></textarea>
+        </div>
+        <ul id="url-builder-errors" class="errors" style="display:none;"></ul>
+    </div>
+
 {% endblock %}
 
 {% block details %}
@@ -97,3 +149,123 @@
 {% if not profile.handle %}
     {% js "new Craft.HandleGenerator('##{'name'|namespaceInputId}', '##{'handle'|namespaceInputId}');" %}
 {% endif %}
+
+{% js %}
+(function () {
+    var modeRecordsBtn  = document.getElementById('url-builder-mode-records');
+    var modeFindBtn     = document.getElementById('url-builder-mode-find');
+    var methodGetBtn    = document.getElementById('url-builder-method-get');
+    var methodPostBtn   = document.getElementById('url-builder-method-post');
+    var dataField       = document.getElementById('url-builder-data');
+    var output          = document.getElementById('url-builder-output');
+    var copyBtn         = document.getElementById('url-builder-copy');
+    var errorsEl        = document.getElementById('url-builder-errors');
+    var handleInput     = document.getElementById('{{ 'handle'|namespaceInputId }}');
+
+    var currentMode   = 'records';
+    var currentMethod = 'get';
+    var lastValidUrl  = '';
+
+    function getHandle() {
+        return (handleInput ? handleInput.value : '{{ profile.handle|e('js') }}').trim();
+    }
+
+    function buildQueryString(baseParams, dataParams) {
+        var parts = [];
+        Object.keys(baseParams).forEach(function (k) { parts.push(k + '=' + baseParams[k]); });
+        Object.keys(dataParams).forEach(function (k) {
+            var v = dataParams[k];
+            parts.push(k + '=' + (typeof v === 'object' && v !== null ? JSON.stringify(v) : v));
+        });
+        return parts.join('&');
+    }
+
+    function parseData() {
+        var raw = dataField.value.trim();
+        errorsEl.style.display = 'none';
+        errorsEl.innerHTML = '';
+
+        if (!raw) return {};
+
+        var parsed;
+        try {
+            parsed = JSON.parse(raw);
+        } catch (e) {
+            errorsEl.innerHTML = '<li>Invalid JSON: ' + e.message + '</li>';
+            errorsEl.style.display = '';
+            return null;
+        }
+
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+            errorsEl.innerHTML = '<li>Top-level JSON must be an object.</li>';
+            errorsEl.style.display = '';
+            return null;
+        }
+
+        return parsed;
+    }
+
+    function buildUrl() {
+        var handle     = getHandle();
+        var base       = window.location.origin + '/actions/filemaker-proxy/api/middleware';
+        var baseParams = {};
+
+        if (handle) baseParams['profile'] = handle;
+        if (currentMode === 'find') baseParams['mode'] = 'find';
+
+        var data = parseData();
+        if (data === null) {
+            // Keep the last valid URL, just show the error
+            return;
+        }
+
+        var qs = currentMethod === 'get'
+            ? buildQueryString(baseParams, data)
+            : buildQueryString(baseParams, {});
+
+        lastValidUrl  = base + '?' + qs;
+        output.value  = lastValidUrl;
+    }
+
+    modeRecordsBtn.addEventListener('click', function () {
+        currentMode = 'records';
+        modeRecordsBtn.classList.add('active');
+        modeFindBtn.classList.remove('active');
+        buildUrl();
+    });
+
+    modeFindBtn.addEventListener('click', function () {
+        currentMode = 'find';
+        modeFindBtn.classList.add('active');
+        modeRecordsBtn.classList.remove('active');
+        buildUrl();
+    });
+
+    methodGetBtn.addEventListener('click', function () {
+        currentMethod = 'get';
+        methodGetBtn.classList.add('active');
+        methodPostBtn.classList.remove('active');
+        buildUrl();
+    });
+
+    methodPostBtn.addEventListener('click', function () {
+        currentMethod = 'post';
+        methodPostBtn.classList.add('active');
+        methodGetBtn.classList.remove('active');
+        buildUrl();
+    });
+
+    dataField.addEventListener('input', buildUrl);
+    if (handleInput) handleInput.addEventListener('input', buildUrl);
+
+    copyBtn.addEventListener('click', function () {
+        if (!output.value) return;
+        navigator.clipboard.writeText(output.value).then(function () {
+            copyBtn.textContent = '{{ "Copied!"|t|e('js') }}';
+            setTimeout(function () { copyBtn.textContent = '{{ "Copy"|t|e('js') }}'; }, 2000);
+        });
+    });
+
+    buildUrl();
+}());
+{% endjs %}
