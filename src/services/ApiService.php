@@ -195,6 +195,18 @@ class ApiService extends Component
                     $mode = $queryParams['mode'] ?? 'records';
                     unset($queryParams['profile'], $queryParams['mode']);
 
+                    if ($mode === 'find') {
+                        foreach ($queryParams as $key => $value) {
+                            // Decode JSON string values (e.g. query=[{...}]) into actual arrays/objects
+                            if (is_string($value) && isset($value[0]) && in_array($value[0], ['{', '['], true)) {
+                                $decoded = json_decode($value, true);
+                                if (json_last_error() === JSON_ERROR_NONE) {
+                                    $queryParams[$key] = $decoded;
+                                }
+                            }
+                        }
+                    }
+
                     $response = FmProxy::getInstance()->api->makeRequest($profile, $method, $queryParams, $mode);
                     return $response->getBody()->getContents();
                 }
