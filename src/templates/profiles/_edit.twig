@@ -205,9 +205,11 @@
         return parsed;
     }
 
+    var endpointBase = '{{ profile.getUrl()|split('?')[0]|e('js') }}';
+
     function buildUrl() {
         var handle     = getHandle();
-        var base       = window.location.origin + '/actions/filemaker-proxy/api/middleware';
+        var base       = endpointBase;
         var baseParams = {};
 
         if (handle) baseParams['profile'] = handle;
