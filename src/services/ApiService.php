@@ -238,10 +238,10 @@ class ApiService extends Component
                 $nextUrl = $parsed['scheme'] . '://' . $parsed['host']
                     . ($parsed['path'] ?? '')
                     . '?' . http_build_query($queryParams);
-
-                $data['response']['dataInfo']['nextUrl'] = $nextUrl;
-                return json_encode($data);
             }
+
+            $data['response']['dataInfo']['nextUrl'] = $nextUrl ?? '';
+            return json_encode($data);
         }
 
         return $body;
