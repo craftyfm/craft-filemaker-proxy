@@ -67,6 +67,20 @@
         disabled: readOnly
     }) }}
 
+    {% if profile.id %}
+    <div class="field">
+        <div class="heading">
+            <label>{{ "FileMaker Base URL"|t }}</label>
+            <div class="instructions">
+                <p>{{ "The FileMaker Data API base URL for this profile's layout. Record and Find endpoints are built from this."|t }}</p>
+            </div>
+        </div>
+        <div class="input">
+            <input type="text" class="text fullwidth code" readonly value="{{ profile.getBaseUrl() }}">
+        </div>
+    </div>
+    {% endif %}
+
     <hr>
 
     <h2>{{ "URL Builder"|t }}</h2>

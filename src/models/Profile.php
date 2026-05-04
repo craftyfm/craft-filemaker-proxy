@@ -34,20 +34,22 @@ class Profile extends Model
         return UrlHelper::cpUrl('filemaker-proxy/profiles/' . $this->id);
     }
 
-    public function getRecordUrl(): string
+    public function getBaseUrl(): string
     {
         $connection = $this->getConnection();
         $host = App::parseEnv($connection->host);
         $database = App::parseEnv($connection->database);
-        return "https://$host/fmi/data/vLatest/databases/$database/layouts/$this->layout/records";
+        return "https://$host/fmi/data/vLatest/databases/$database/layouts/$this->layout";
+    }
+
+    public function getRecordUrl(): string
+    {
+        return $this->getBaseUrl() . '/records';
     }
 
     public function getFindUrl(): string
     {
-        $connection = $this->getConnection();
-        $host = App::parseEnv($connection->host);
-        $database = App::parseEnv($connection->database);
-        return "https://$host/fmi/data/vLatest/databases/$database/layouts/$this->layout/_find";
+        return $this->getBaseUrl() . '/_find';
     }
 
     public function getConnection(): ?Connection
