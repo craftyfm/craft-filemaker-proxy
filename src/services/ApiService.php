@@ -230,11 +230,13 @@ class ApiService extends Component
             $parsed = parse_url($url);
             parse_str($parsed['query'] ?? '', $queryParams);
 
-            $offset     = (int)($queryParams['_offset'] ?? 1);
+            $mode       = $queryParams['mode'] ?? 'records';
+            $offsetKey  = $mode === 'find' ? 'offset' : '_offset';
+            $offset     = (int)($queryParams[$offsetKey] ?? 1);
             $nextOffset = $offset + (int)$dataInfo['returnedCount'];
 
             if ($nextOffset < (int)$dataInfo['foundCount']) {
-                $queryParams['_offset'] = $nextOffset;
+                $queryParams[$offsetKey] = $nextOffset;
                 $nextUrl = $parsed['scheme'] . '://' . $parsed['host']
                     . ($parsed['path'] ?? '')
                     . '?' . http_build_query($queryParams);
